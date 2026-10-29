@@ -93,20 +93,67 @@ export function decodeResults(token) {
   return decodeLegacyJson(token)
 }
 
-export function buildResultsUrl(token) {
-  const { origin, pathname } = window.location
+function appBasePath() {
+  const { pathname } = window.location
   let basePath = pathname.endsWith('index.html')
     ? pathname.slice(0, -'index.html'.length)
     : pathname
-  if (!basePath.endsWith('/')) basePath += '/'
-  return `${origin}${basePath}#/r/${token}`
+  // Keep directory root for the GitHub Pages project site
+  if (!basePath.endsWith('/')) {
+    const last = basePath.split('/').pop()
+    if (last && !last.includes('.')) basePath += '/'
+    else basePath = `${basePath.slice(0, basePath.lastIndexOf('/') + 1)}`
+  }
+  return basePath
 }
 
-export function parseHash(hash = window.location.hash) {
-  const raw = hash.replace(/^#/, '')
-  if (!raw || raw === '/' || raw === '') {
-    return { view: 'survey' }
-  }
+/** Results links use ?r= so GitHub Pages / Messages keep the token (hash often gets dropped). */
+export function buildResultsUrl(token) {
+  return `${window.location.origin}${appBasePath()}?r=${encodeURIComponent(token)}`
+}
+
+export function buildShareUrl(token) {
+  return `${window.location.origin}${appBasePath()}?share=${encodeURIComponent(token)}`
+}
+
+export function goToShare(token) {
+  const url = new URL(window.location.href)
+  url.search = ''
+  url.hash = ''
+  url.searchParams.set('share', token)
+  window.history.pushState({}, '', url)
+  window.dispatchEvent(new Event('app-route'))
+}
+
+export function goToResults(token) {
+  const url = new URL(window.location.href)
+  url.search = ''
+  url.hash = ''
+  url.searchParams.set('r', token)
+  window.history.pushState({}, '', url)
+  window.dispatchEvent(new Event('app-route'))
+}
+
+export function goToSurvey() {
+  const url = new URL(window.location.href)
+  url.search = ''
+  url.hash = ''
+  window.history.pushState({}, '', url)
+  window.dispatchEvent(new Event('app-route'))
+}
+
+/**
+ * Prefer query params (?r= / ?share=). Fall back to old hash routes (#/r/ #/share/).
+ */
+export function parseRoute() {
+  const params = new URLSearchParams(window.location.search)
+  const r = params.get('r')
+  if (r) return { view: 'results', token: r }
+  const share = params.get('share')
+  if (share) return { view: 'share', token: share }
+
+  const raw = window.location.hash.replace(/^#/, '')
+  if (!raw || raw === '/') return { view: 'survey' }
   const parts = raw.split('/').filter(Boolean)
   if (parts[0] === 'r' && parts[1]) {
     return { view: 'results', token: parts.slice(1).join('/') }
@@ -115,4 +162,9 @@ export function parseHash(hash = window.location.hash) {
     return { view: 'share', token: parts.slice(1).join('/') }
   }
   return { view: 'survey' }
+}
+
+/** @deprecated use parseRoute */
+export function parseHash() {
+  return parseRoute()
 }

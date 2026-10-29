@@ -5,7 +5,9 @@ import Results from './components/Results.jsx'
 import {
   encodeResults,
   decodeResults,
-  parseHash,
+  parseRoute,
+  goToShare,
+  goToResults,
 } from './utils/encode.js'
 import { loadDraft, saveDraft, clearDraft } from './utils/storage.js'
 import './App.css'
@@ -14,12 +16,18 @@ function App() {
   const draft = loadDraft()
   const [name, setName] = useState(draft.name)
   const [answers, setAnswers] = useState(draft.answers)
-  const [route, setRoute] = useState(() => parseHash())
+  const [route, setRoute] = useState(() => parseRoute())
 
   useEffect(() => {
-    const onHash = () => setRoute(parseHash())
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    const sync = () => setRoute(parseRoute())
+    window.addEventListener('hashchange', sync)
+    window.addEventListener('popstate', sync)
+    window.addEventListener('app-route', sync)
+    return () => {
+      window.removeEventListener('hashchange', sync)
+      window.removeEventListener('popstate', sync)
+      window.removeEventListener('app-route', sync)
+    }
   }, [])
 
   useEffect(() => {
@@ -41,16 +49,14 @@ function App() {
   function handleSubmit() {
     const token = encodeResults({ name, answers })
     clearDraft()
-    window.location.hash = `#/share/${token}`
+    goToShare(token)
   }
 
   if (route.view === 'share' && route.token) {
     return (
       <ShareScreen
         token={route.token}
-        onViewResults={() => {
-          window.location.hash = `#/r/${route.token}`
-        }}
+        onViewResults={() => goToResults(route.token)}
       />
     )
   }

@@ -41,7 +41,7 @@ export default function Results({ name, answers, invalid }) {
             the watchlist link.
           </p>
         </header>
-        <a className="text-btn" href="#/">
+        <a className="text-btn" href="./">
           Start a new watchlist
         </a>
       </div>
