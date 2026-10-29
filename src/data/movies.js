@@ -42,10 +42,10 @@ const MOVIES_80S_RAW = [
     poster: WIKI('8/87/Three_amigos_ver2.jpg'),
   },
   {
-    title: 'Top Gun',
+    title: "Ferris Bueller's Day Off",
     year: 1986,
-    rating: 'PG',
-    poster: WIKI('4/46/Top_Gun_Movie.jpg'),
+    rating: 'PG-13',
+    poster: WIKI('9/9b/Ferris_Bueller%27s_Day_Off.jpg'),
   },
   {
     title: 'Empire of the Sun',
