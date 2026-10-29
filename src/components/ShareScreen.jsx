@@ -39,7 +39,7 @@ export default function ShareScreen({ token, onViewResults }) {
           <input type="text" readOnly value={url} onFocus={(e) => e.target.select()} />
         </label>
         <button type="button" className="submit-btn" onClick={handleCopy}>
-          {copied ? 'Copied!' : 'Copy results link'}
+          {copied ? 'Copied!' : 'Copy link'}
         </button>
         <button type="button" className="text-btn" onClick={onViewResults}>
           Preview results
