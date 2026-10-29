@@ -43,6 +43,7 @@ export default function PosterLightbox({ movie, onClose }) {
           src={largePosterSrc(movie.poster)}
           alt={`${movie.title} (${movie.year})`}
           referrerPolicy="no-referrer"
+          onClick={onClose}
         />
         <p className="lightbox-caption">
           {movie.title} <span>({movie.year})</span>
