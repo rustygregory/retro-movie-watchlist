@@ -129,10 +129,10 @@ const MOVIES_90S_RAW = [
     poster: WIKI('6/67/Forrest_Gump_poster.jpg'),
   },
   {
-    title: 'Titanic',
-    year: 1997,
-    rating: 'PG-13',
-    poster: TMDB('/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg'),
+    title: 'The Sandlot',
+    year: 1993,
+    rating: 'PG',
+    poster: WIKI('d/d4/Sandlot_poster.jpg'),
   },
   {
     title: 'The Wedding Singer',
