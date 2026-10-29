@@ -18,10 +18,10 @@ function withNumbers(movies, prefix) {
 
 const MOVIES_80S_RAW = [
   {
-    title: 'The Karate Kid',
-    year: 1984,
+    title: 'Overboard',
+    year: 1987,
     rating: 'PG',
-    poster: WIKI('a/a9/Karate_kid.jpg'),
+    poster: WIKI('b/b0/Overboard_film.jpg'),
   },
   {
     title: 'Crocodile Dundee',
