@@ -12,8 +12,23 @@ import {
 import { loadDraft, saveDraft, clearDraft } from './utils/storage.js'
 import './App.css'
 
+function readInitialDraft() {
+  const params = new URLSearchParams(window.location.search)
+  // Fresh survey links clear any leftover answers from a previous fill-out
+  if (params.has('fresh') || params.has('new')) {
+    clearDraft()
+    params.delete('fresh')
+    params.delete('new')
+    const url = new URL(window.location.href)
+    url.search = params.toString()
+    window.history.replaceState({}, '', url)
+    return { name: '', answers: {} }
+  }
+  return loadDraft()
+}
+
 function App() {
-  const draft = loadDraft()
+  const [draft] = useState(readInitialDraft)
   const [name, setName] = useState(draft.name)
   const [answers, setAnswers] = useState(draft.answers)
   const [route, setRoute] = useState(() => parseRoute())
@@ -48,6 +63,8 @@ function App() {
 
   function handleSubmit() {
     const token = encodeResults({ name, answers })
+    setName('')
+    setAnswers({})
     clearDraft()
     goToShare(token)
   }
