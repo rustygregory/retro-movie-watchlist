@@ -28,8 +28,8 @@ export default function ShareScreen({ token, onViewResults }) {
         <p className="eyebrow">You’re done</p>
         <h1 className="brand">Send your results</h1>
         <p className="lede">
-          This does not send automatically. Copy the results link below and text
-          it back to the person who sent you the list.
+          This does not send automatically. Copy the results link and text it
+          back to the bee’s knees who sent you this list.
         </p>
       </header>
 
@@ -45,8 +45,8 @@ export default function ShareScreen({ token, onViewResults }) {
           Preview results
         </button>
         <p className="share-hint">
-          Tip: paste the copied link into Messages. Opening the survey link again
-          is not the same as sending this results link.
+          Tip: paste it into Messages. Sending the survey link again is not the
+          same as sending these results.
         </p>
       </div>
     </div>
