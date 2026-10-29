@@ -301,6 +301,7 @@
   display: flex;
   gap: 0.35rem;
   align-items: baseline;
+  margin-bottom: 8px;
 }
 
 .movie-number {
@@ -312,7 +313,7 @@
 }
 
 .movie-title {
-  margin: 0 0 -8px;
+  margin: 0;
   font-size: 24px;
   font-weight: 600;
   line-height: 1.25;
