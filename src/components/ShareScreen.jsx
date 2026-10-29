@@ -4,6 +4,7 @@ import { buildResultsUrl } from '../utils/encode.js'
 export default function ShareScreen({ token, onViewResults }) {
   const url = buildResultsUrl(token)
   const [copied, setCopied] = useState(false)
+  const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
   async function handleCopy() {
     try {
@@ -11,7 +12,6 @@ export default function ShareScreen({ token, onViewResults }) {
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     } catch {
-      // fallback: select a temporary input
       const input = document.createElement('input')
       input.value = url
       document.body.appendChild(input)
@@ -23,14 +23,27 @@ export default function ShareScreen({ token, onViewResults }) {
     }
   }
 
+  async function handleShare() {
+    try {
+      await navigator.share({
+        title: 'My Retro Movie Watchlist results',
+        text: 'Here are my Retro Movie Watchlist results:',
+        url,
+      })
+    } catch {
+      // user cancelled or share failed — fall back to copy
+      await handleCopy()
+    }
+  }
+
   return (
     <div className="page page--share">
       <header className="hero hero--compact">
         <p className="eyebrow">You’re done</p>
-        <h1 className="brand">Copy your results link</h1>
+        <h1 className="brand">Send your results</h1>
         <p className="lede">
-          Text this link back so we can see which movies you’ve seen. The link
-          opens a private results page with your name and answers.
+          This does not send automatically. Text or share the results link below
+          back to the person who sent you the list.
         </p>
       </header>
 
@@ -39,12 +52,21 @@ export default function ShareScreen({ token, onViewResults }) {
           <span className="name-label">Results link</span>
           <input type="text" readOnly value={url} onFocus={(e) => e.target.select()} />
         </label>
+        {canNativeShare ? (
+          <button type="button" className="submit-btn" onClick={handleShare}>
+            Share results link
+          </button>
+        ) : null}
         <button type="button" className="submit-btn" onClick={handleCopy}>
           {copied ? 'Copied!' : 'Copy results link'}
         </button>
         <button type="button" className="text-btn" onClick={onViewResults}>
           Preview results
         </button>
+        <p className="share-hint">
+          Tip: use Share / paste into Messages. Opening the survey link again is
+          not the same as sending this results link.
+        </p>
       </div>
     </div>
   )

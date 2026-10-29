@@ -1,5 +1,8 @@
 import { MOVIE_IDS } from '../data/movies.js'
 
+const VERSION = 1
+const MAX_NAME_BYTES = 40
+
 function toBase64Url(bytes) {
   let binary = ''
   for (const b of bytes) binary += String.fromCharCode(b)
@@ -24,21 +27,43 @@ function utf8Decode(bytes) {
 }
 
 /**
- * Compact payload: { n: name, a: { [movieId]: true|false } }
- * Encoded as base64url JSON for the hash URL.
+ * Compact binary payload (short enough for SMS):
+ * [version][nameLen][name utf8...][bit0][bit1][bit2]
+ * Each answer bit: 1 = seen, 0 = not seen (movie order = MOVIE_IDS).
  */
 export function encodeResults({ name, answers }) {
-  const payload = {
-    n: name.trim(),
-    a: Object.fromEntries(
-      MOVIE_IDS.map((id) => [id, answers[id] === true]),
-    ),
-  }
-  return toBase64Url(utf8Encode(JSON.stringify(payload)))
+  const nameBytes = utf8Encode(name.trim()).slice(0, MAX_NAME_BYTES)
+  const bits = new Uint8Array(3)
+  MOVIE_IDS.forEach((id, i) => {
+    if (answers[id] === true) {
+      bits[Math.floor(i / 8)] |= 1 << (i % 8)
+    }
+  })
+  const out = new Uint8Array(2 + nameBytes.length + bits.length)
+  out[0] = VERSION
+  out[1] = nameBytes.length
+  out.set(nameBytes, 2)
+  out.set(bits, 2 + nameBytes.length)
+  return toBase64Url(out)
 }
 
-export function decodeResults(token) {
-  if (!token || typeof token !== 'string') return null
+function decodeCompact(bytes) {
+  if (bytes.length < 5) return null
+  const version = bytes[0]
+  if (version !== VERSION) return null
+  const nameLen = bytes[1]
+  if (bytes.length < 2 + nameLen + 3) return null
+  const name = utf8Decode(bytes.slice(2, 2 + nameLen))
+  const bits = bytes.slice(2 + nameLen, 2 + nameLen + 3)
+  const answers = {}
+  MOVIE_IDS.forEach((id, i) => {
+    answers[id] = ((bits[Math.floor(i / 8)] >> (i % 8)) & 1) === 1
+  })
+  return { name, answers }
+}
+
+/** Legacy JSON payloads from earlier deploys. */
+function decodeLegacyJson(token) {
   try {
     const json = utf8Decode(fromBase64Url(token))
     const data = JSON.parse(json)
@@ -56,9 +81,25 @@ export function decodeResults(token) {
   }
 }
 
+export function decodeResults(token) {
+  if (!token || typeof token !== 'string') return null
+  try {
+    const bytes = fromBase64Url(token)
+    const compact = decodeCompact(bytes)
+    if (compact) return compact
+  } catch {
+    // fall through to legacy
+  }
+  return decodeLegacyJson(token)
+}
+
 export function buildResultsUrl(token) {
-  const base = `${window.location.origin}${window.location.pathname}`
-  return `${base}#/r/${token}`
+  const { origin, pathname } = window.location
+  let basePath = pathname.endsWith('index.html')
+    ? pathname.slice(0, -'index.html'.length)
+    : pathname
+  if (!basePath.endsWith('/')) basePath += '/'
+  return `${origin}${basePath}#/r/${token}`
 }
 
 export function parseHash(hash = window.location.hash) {
@@ -68,10 +109,10 @@ export function parseHash(hash = window.location.hash) {
   }
   const parts = raw.split('/').filter(Boolean)
   if (parts[0] === 'r' && parts[1]) {
-    return { view: 'results', token: parts[1] }
+    return { view: 'results', token: parts.slice(1).join('/') }
   }
   if (parts[0] === 'share' && parts[1]) {
-    return { view: 'share', token: parts[1] }
+    return { view: 'share', token: parts.slice(1).join('/') }
   }
   return { view: 'survey' }
 }
