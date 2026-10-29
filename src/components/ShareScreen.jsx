@@ -45,8 +45,8 @@ export default function ShareScreen({ token, onViewResults }) {
           Preview results
         </button>
         <p className="share-hint">
-          Tip: paste it into Messages. Sending the survey link again is not the
-          same as sending these results.
+          Tip: paste the results link into Messages and send it back to the
+          bee’s knees.
         </p>
       </div>
     </div>
