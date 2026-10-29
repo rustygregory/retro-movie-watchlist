@@ -57,8 +57,8 @@ export default function Survey({
       <header className="hero">
         <h1 className="brand">Retro Movie Watchlist</h1>
         <p className="lede">
-          Mark which classics you’ve seen from the ’80s and ’90s, then send your
-          results back.
+          Mark which classics you’ve seen from the 80s and 90s, then share your
+          results.
         </p>
         <p className="progress" aria-live="polite">
           {allAnswered
